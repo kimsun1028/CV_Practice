@@ -1,7 +1,7 @@
-
 import cv2 as cv
 import numpy as np
 
+# Define kernels
 kernel_table = [
     {'name': 'Box 3x3',         'kernel': np.ones((3, 3)) / 9},   # Alternative: cv.boxFilter(), cv.blur()
     {'name': 'Gaussian 3x3',    'kernel': np.array([[1, 2, 1],    # Alternative: cv.GaussianBlur()
@@ -57,18 +57,42 @@ kernel_table = [
                                                     [ 0,  1,  2]])},
 ]
 
+img_list = [
+    'data/lena.tif',
+    'data/black_circle.png'
 
-img_list = ['data/lena.tif']
+]
+
+# Initialize control parameters
 kernel_select = 0
 img_select = 0
 
 while True:
+    # Read the given image as gray scale
     img = cv.imread(img_list[img_select], cv.IMREAD_GRAYSCALE)
+    assert img is not None, 'Cannot read the given image, ' + img_list[img_select]
 
-    name, kernel = kernel_table[kernel_select].values()
-    result = cv.filter2D(img, -1, kernel)
+    # Apply convolution to the image with the given 'kernel'
+    name, kernel = kernel_table[kernel_select].values() # Make (short) alias
+    # result = cv.filter2D(img, -1, kernel)             # Note) dtype: np.uint8 (range: [0, 255]; Be careful!)
+    result = cv.filter2D(img, cv.CV_64F, kernel)        # Note) dtype: np.float64
+    result = cv.convertScaleAbs(result)                 # Convert 'np.float64' to 'np.uint8' with saturation
 
-    merge = np.hstack((img,result))
-    cv.imshow('Image Filtering',merge)
+    # Show the image and its filtered result
+    cv.putText(result, name, (10, 25), cv.FONT_HERSHEY_DUPLEX, 0.6, (255, 255, 255), thickness=2)
+    cv.putText(result, name, (10, 25), cv.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 0))
+    merge = np.hstack((img, result))
+    cv.imshow('Image Filtering: Original | Filtered', merge)
 
-    cv.waitKey()
+    # Process the key event
+    key = cv.waitKey()
+    if key == 27: # ESC
+        break
+    elif key == ord('+') or key == ord('='):
+        kernel_select = (kernel_select + 1) % len(kernel_table)
+    elif key == ord('-') or key == ord('_'):
+        kernel_select = (kernel_select - 1) % len(kernel_table)
+    elif key == ord('\t'):
+        img_select = (img_select + 1) % len(img_list)
+
+cv.destroyAllWindows()
