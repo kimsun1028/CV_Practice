@@ -75,7 +75,7 @@ while True:
     # Apply convolution to the image with the given 'kernel'
     name, kernel = kernel_table[kernel_select].values() # Make (short) alias
     # result = cv.filter2D(img, -1, kernel)             # Note) dtype: np.uint8 (range: [0, 255]; Be careful!)
-    result = cv.filter2D(img, cv.CV_64F, kernel)        # Note) dtype: np.float64
+    result = cv.filter2D(img, cv.CV_64F         , kernel)        # Note) dtype: np.float64
     result = cv.convertScaleAbs(result)                 # Convert 'np.float64' to 'np.uint8' with saturation
 
     # Show the image and its filtered result
